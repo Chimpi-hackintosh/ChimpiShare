@@ -61,6 +61,9 @@ O relatório específico de cada compilação acompanha o pacote em `checks.json
   e com os diretórios Python removidos do PATH
 - Empacotamento dos downloads exige os relatórios da execução do binário
 - O instalador NSIS é compilado no Windows após a verificação do aplicativo
+- A verificação do instalador testa instalação, abertura em português com override,
+  transferência, atualização e desinstalação, preservando preferências e arquivos
+  recebidos — resultado em `windows-installer-checks.json`
 
 Essas verificações não equivalem a testar um computador limpo sem Python instalado
 

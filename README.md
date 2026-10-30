@@ -209,11 +209,13 @@ macOS Intel e macOS Apple Silicon nos sistemas correspondentes
 Antes de anexar os downloads, executa o próprio binário para abrir a interface
 e transferir um arquivo por HTTPS, verificando os bytes e o SHA-256
 O resultado acompanha cada plataforma no arquivo `checks.json`
+No Windows, verifica também instalação, atualização, desinstalação e preservação
+das preferências e arquivos recebidos, usando uma pasta temporária no runner
 
 O instalador e os executáveis não têm assinatura de uma autoridade certificadora
 No macOS, o empacotador aplica assinatura ad-hoc, sem notarização Apple
-Instalação em máquina limpa, atualização, desinstalação e recepção AirDrop ainda
-precisam de verificação manual nos equipamentos de destino
+O uso em uma máquina limpa e a recepção AirDrop ainda precisam de verificação
+manual nos equipamentos de destino
 
 ## Verificar o código
 

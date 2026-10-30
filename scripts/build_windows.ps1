@@ -15,8 +15,8 @@ $nsisCommand = Get-Command makensis.exe -ErrorAction SilentlyContinue
 if ($nsisCommand) { $nsisPath = $nsisCommand.Source }
 else { $nsisPath = Join-Path ${env:ProgramFiles(x86)} "NSIS\makensis.exe" }
 if (-not (Test-Path $nsisPath)) {
-    Write-Host "Portable app built at dist\ChimpiShare; install NSIS 3 and run makensis packaging\installer.nsi to generate setup"
+    Write-Host 'Portable app built at dist\ChimpiShare; install NSIS 3 and run makensis (Resolve-Path packaging\installer.nsi).Path to generate setup'
     exit 0
 }
-& $nsisPath packaging/installer.nsi
+& $nsisPath (Resolve-Path 'packaging/installer.nsi').Path
 if ($LASTEXITCODE -ne 0) { throw "Installer build failed" }

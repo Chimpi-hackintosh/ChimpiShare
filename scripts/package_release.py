@@ -33,6 +33,8 @@ def main():
         if not setup.is_file():
             raise FileNotFoundError(setup)
         shutil.copy2(setup, output / setup.name)
+        shutil.copy2(ROOT / "build" / "verification" / "installer-checks.json",
+                     output / f"ChimpiShare-{__version__}-windows-installer-checks.json")
         target = "windows-x64"
     elif sys.platform == "darwin":
         machine = platform.machine().lower()
