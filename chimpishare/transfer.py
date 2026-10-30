@@ -192,6 +192,7 @@ class _Handler(BaseHTTPRequestHandler):
             return
         offer = None
         temp_dir = None
+        response_status, response_data = 500, {"error": "storage_error"}
         try:
             with self.owner.lock:
                 pending = self.owner.offer
@@ -230,11 +231,13 @@ class _Handler(BaseHTTPRequestHandler):
             temp_dir = None
             saved = published / offer.name
             self.owner.notify("received", path=str(saved), name=offer.name, size=offer.size)
-            self.reply(201, {"name": offer.name, "size": offer.size, "sha256": offer.digest})
+            response_status = 201
+            response_data = {"name": offer.name, "size": offer.size, "sha256": offer.digest}
         except ShareError as exc:
-            self.reply(410 if exc.code == "expired" else 400, {"error": exc.code})
+            response_status = 410 if exc.code == "expired" else 400
+            response_data = {"error": exc.code}
         except OSError:
-            self.reply(500, {"error": "storage_error"})
+            response_status, response_data = 500, {"error": "storage_error"}
         finally:
             if temp_dir is not None:
                 shutil.rmtree(temp_dir, ignore_errors=True)
@@ -242,6 +245,8 @@ class _Handler(BaseHTTPRequestHandler):
                 with self.owner.lock:
                     if self.owner.offer is offer:
                         self.owner.offer = None
+        # The response confirms that publication or cleanup and slot release finished.
+        self.reply(response_status, response_data)
 
 
 class Receiver:

@@ -50,7 +50,7 @@ class BridgeAndSettingsTests(unittest.TestCase):
 
     def test_inbox_requires_stability_and_resets_after_change(self):
         with tempfile.TemporaryDirectory() as folder:
-            path = Path(folder) / "file.png"
+            path = (Path(folder) / "file.png").resolve()
             path.write_bytes(b"one")
             inbox = StableInbox(folder, stable_seconds=3)
             with patch("chimpishare.bridge.time.monotonic", return_value=0):
