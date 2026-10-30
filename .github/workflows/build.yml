@@ -1,0 +1,131 @@
+name: Chimpi-hackintosh — Compilar ChimpiShare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chimpishare-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            target: windows-x64
+            architecture: x64
+          - os: ubuntu-22.04
+            target: linux-x64
+            architecture: x64
+          - os: macos-15-intel
+            target: macos-x64
+            architecture: x64
+          - os: macos-15
+            target: macos-arm64
+            architecture: arm64
+    steps:
+      - name: Obter código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Preparar Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+          architecture: ${{ matrix.architecture }}
+      - name: Instalar bibliotecas de build
+        run: python -m pip install -r requirements-build.txt
+      - name: Preparar servidor gráfico Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb python3-tk
+      - name: Testar transporte e componentes
+        run: python -m unittest discover -s tests -v
+      - name: Compilar aplicativo nativo
+        run: python scripts/build_native.py
+      - name: Verificar aplicativo empacotado no Linux
+        if: runner.os == 'Linux'
+        run: xvfb-run -a python scripts/verify_bundle.py
+      - name: Verificar aplicativo empacotado no Windows ou macOS
+        if: runner.os != 'Linux'
+        run: python scripts/verify_bundle.py
+      - name: Compilar instalador Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $nsis = Join-Path ${env:ProgramFiles(x86)} 'NSIS\makensis.exe'
+          if (-not (Test-Path $nsis)) {
+            choco install nsis --yes --no-progress --limit-output
+            if ($LASTEXITCODE -ne 0) { throw 'NSIS installation failed' }
+          }
+          & $nsis packaging/installer.nsi
+          if ($LASTEXITCODE -ne 0) { throw 'NSIS build failed' }
+      - name: Empacotar downloads
+        run: python scripts/package_release.py
+      - name: Guardar pacotes verificados
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ChimpiShare-${{ matrix.target }}
+          path: release/*
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: Preparar lançamento com todos os downloads
+    needs: build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Obter código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Reunir pacotes
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: release
+          pattern: ChimpiShare-*
+          merge-multiple: true
+      - name: Criar pacote de fontes e somas SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'from chimpishare import __version__; print(__version__)')
+          git archive --format=zip --prefix="ChimpiShare-${version}/" --output="release/ChimpiShare-${version}-source.zip" HEAD
+          cd release
+          sha256sum ./* > SHA256SUMS.txt
+      - name: Anexar arquivos ao rascunho de lançamento
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TARGET_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'from chimpishare import __version__; print(__version__)')
+          tag="v${version}"
+          if gh release view "$tag" --json isDraft --jq .isDraft > build-release-state.txt 2>/dev/null; then
+            if [ "$(cat build-release-state.txt)" != 'true' ]; then
+              echo 'This version is already published; keeping its existing downloads unchanged'
+              exit 0
+            fi
+            gh release edit "$tag" --target "$TARGET_SHA"
+          else
+            gh release create "$tag" --target "$TARGET_SHA" --draft --prerelease --title "ChimpiShare ${version}" --notes-file "docs/RELEASE-${version}.md"
+          fi
+          gh release upload "$tag" release/* --clobber
+          echo 'All native builds passed and release downloads are attached' >> "$GITHUB_STEP_SUMMARY"
