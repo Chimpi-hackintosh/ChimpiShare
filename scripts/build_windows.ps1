@@ -7,7 +7,7 @@ if ($LASTEXITCODE -ne 0) { throw "Python 3 with venv is required on the build co
 $buildPython = Join-Path $projectRoot ".venv-build\Scripts\python.exe"
 & $buildPython -c "import platform, struct; assert struct.calcsize('P') == 8 and platform.machine().lower() in ('amd64', 'x86_64'), 'Use x64 Python'"
 if ($LASTEXITCODE -ne 0) { throw "Use 64-bit Python" }
-& $buildPython -m pip install -r requirements-build.txt
+& $buildPython scripts/install_build_dependencies.py
 if ($LASTEXITCODE -ne 0) { throw "Dependency installation failed" }
 & $buildPython scripts/build_native.py
 if ($LASTEXITCODE -ne 0) { throw "Application build failed" }

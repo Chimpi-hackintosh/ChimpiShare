@@ -201,6 +201,10 @@ sh scripts/build_unix.sh
 
 PyInstaller gera o pacote nativo em `dist` e, no macOS, também o bundle `.app`
 A arquitetura acompanha o Python usado no build
+Para compilar no Mac Intel, instale previamente as ferramentas de compilação
+do Xcode, Rust e OpenSSL 3 do Homebrew
+O instalador de dependências compila `cryptography` com OpenSSL estático nesse
+alvo para evitar conflito com a versão OpenSSL do Python no bundle
 No Linux, o pacote depende da compatibilidade da distribuição e da glibc —
 compile numa distribuição compatível com os computadores que receberão o app
 

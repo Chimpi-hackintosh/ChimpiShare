@@ -46,7 +46,7 @@ jobs:
           cache: pip
           cache-dependency-path: requirements*.txt
       - name: Instalar bibliotecas de build
-        run: python -m pip install -r requirements-build.txt
+        run: python scripts/install_build_dependencies.py
       - name: Preparar servidor gráfico Linux
         if: runner.os == 'Linux'
         run: |
