@@ -8,7 +8,7 @@ import support_notice as support
 
 class SupportNoticeTests(unittest.TestCase):
     def test_only_older_known_versions_warn(self):
-        for current in ["3.0.1", "3.0.1-build-999", "4.0.0", "garbage", None]:
+        for current in ["3.0.2", "3.0.2-build-999", "4.0.0", "garbage", None]:
             self.assertIsNone(support.notice("OpenCore-Helper", current))
         self.assertIsNone(support.notice("Unknown-private-app", "0.0.1"))
         self.assertIsNone(support.notice("ChimpiConstrucoes", "1.0.0"))
@@ -49,7 +49,7 @@ class SupportNoticeTests(unittest.TestCase):
     def test_network_failure_uses_bundled_policy(self):
         with patch.object(support, "read_json", side_effect=OSError("offline")):
             self.assertIsNotNone(support.check("OpenCore-Helper", "2.0.0"))
-            self.assertIsNone(support.check("OpenCore-Helper", "3.0.1"))
+            self.assertIsNone(support.check("OpenCore-Helper", "3.0.2"))
         with patch.object(support, "read_json") as read:
             self.assertIsNone(support.check("Unknown-private-app", "1.0.0"))
             read.assert_not_called()
@@ -60,7 +60,7 @@ class SupportNoticeTests(unittest.TestCase):
         for invalid in [dict(candidate, draft=True), dict(candidate, assets=[]), dict(candidate, prerelease=True), dict(candidate, html_url="https://evil.test/")]:
             self.assertEqual(support.with_releases(support.POLICY, "OpenCore-Helper", [invalid]), support.POLICY)
         result = support.with_releases(support.POLICY, "OpenCore-Helper", [candidate])
-        self.assertIsNotNone(support.notice("OpenCore-Helper", "3.0.1", result))
+        self.assertIsNotNone(support.notice("OpenCore-Helper", "3.0.2", result))
         self.assertEqual(support.release_version("v0.1-lite.3", "lite"), "0.1.3")
         self.assertIsNone(support.release_version("v0.2-games.1", "lite"))
 
