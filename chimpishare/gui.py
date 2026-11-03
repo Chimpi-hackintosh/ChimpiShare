@@ -5,6 +5,7 @@ import time
 import tkinter as tk
 from dataclasses import dataclass, field
 from pathlib import Path
+from support_notice import attach_tk
 from tkinter import filedialog, messagebox, ttk
 
 from . import __version__
@@ -61,6 +62,7 @@ class App:
         self.root.protocol("WM_DELETE_WINDOW", self._close)
         self.root.after(60, self._drain)
         self.root.after(1000, self._scan)
+        attach_tk(self.root, "ChimpiShare", __version__)
 
     def _style(self):
         style = ttk.Style()
