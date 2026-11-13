@@ -23,7 +23,7 @@ class SupportNoticeTests(unittest.TestCase):
 
     def test_numeric_comparison_not_lexical(self):
         self.assertGreater(support.version("1.10.0"), support.version("1.9.9"))
-        self.assertEqual(support.version("v1.1.0-preview.3"), (1, 1, 0))
+        self.assertLess(support.version("v1.1.0-preview.2"), support.version("v1.1.0-preview.3"))
         for value in ["1.0", "prefix1.0.0", "1.0.0<script>", "9" * 101, None]:
             self.assertIsNone(support.version(value))
 
@@ -69,6 +69,34 @@ class SupportNoticeTests(unittest.TestCase):
             self.assertFalse(support.enabled())
         with patch.dict(support.os.environ, {"CHIMPI_SUPPORT_CHECK": "0"}):
             self.assertFalse(support.enabled())
+
+
+class PrereleaseVersionTests(unittest.TestCase):
+    def test_semver_precedence_and_existing_build_labels(self):
+        self.assertLess(support.version("1.1.0-preview.2"), support.version("1.1.0-preview.3"))
+        self.assertLess(support.version("1.1.0-preview.9"), support.version("1.1.0-preview.10"))
+        self.assertLess(support.version("1.1.0-alpha"), support.version("1.1.0-beta"))
+        self.assertLess(support.version("1.1.0-preview.3"), support.version("1.1.0"))
+        self.assertEqual(support.version("3.0.2-build-999"), support.version("3.0.2"))
+        self.assertEqual(support.version("1.1.0+build.1"), support.version("1.1.0+build.2"))
+        self.assertIsNone(support.version("1.1.0-preview..3"))
+        self.assertIsNone(support.version("1.1.0-01"))
+
+    def test_chimpicode_preview_floor_and_next_release(self):
+        self.assertEqual(support.POLICY["apps"]["ChimpiCode"]["minimum"], "1.1.0-preview.3")
+        self.assertIsNotNone(support.notice("ChimpiCode", "1.1.0-preview.2"))
+        self.assertIsNone(support.notice("ChimpiCode", "1.1.0-preview.3"))
+        self.assertIsNone(support.notice("ChimpiCode", "1.1.0"))
+        release = {
+            "tag_name": "v1.1.0-preview.4",
+            "html_url": "https://github.com/Chimpi-hackintosh/ChimpiCode/releases/tag/v1.1.0-preview.4",
+            "assets": [{}],
+            "draft": False,
+            "prerelease": True,
+        }
+        updated = support.with_releases(support.POLICY, "ChimpiCode", [release])
+        self.assertEqual(updated["apps"]["ChimpiCode"]["minimum"], "1.1.0-preview.4")
+        self.assertEqual(updated["apps"]["ChimpiCode"]["tag"], "v1.1.0-preview.4")
 
 
 if __name__ == "__main__":
