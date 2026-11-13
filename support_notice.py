@@ -56,7 +56,7 @@ def version(value):
     if not isinstance(value, str) or len(value) > 100:
         return None
     match = re.fullmatch(
-        r"v?(\\d+)\\.(\\d+)\\.(\\d+)(?:-([0-9A-Za-z.-]+))?(?:\\+[0-9A-Za-z.-]+)?",
+        r"v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?",
         value,
     )
     if not match:
@@ -75,6 +75,7 @@ def version(value):
         return None
     parsed = tuple((0, int(item)) if item.isdigit() else (1, item) for item in identifiers)
     return (*core, 0, parsed)
+
 def official_url(url, repo=None, table=False):
     if not isinstance(url, str):
         return False
