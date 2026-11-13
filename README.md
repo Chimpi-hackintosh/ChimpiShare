@@ -251,3 +251,7 @@ Consultadas em 29/10/2026:
 
 OpenDrop e OWL são projetos externos GPL-3.0, não incluídos neste pacote
 O ChimpiShare não é um produto da Apple nem usa uma API oficial AirDrop para Windows
+
+## Aviso de suporte
+
+Aviso traduzido, data de 04/11/2026, versões e limites de distribuição em [SUPPORT.md](SUPPORT.md)
