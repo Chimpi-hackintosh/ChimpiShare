@@ -40,3 +40,8 @@ O catálogo público não inclui repositórios privados
 Os testes do aviso cobrem versões iguais e mais novas sem alerta, versões antigas com alerta, mudança exata de data, traduções, falha de rede e rejeição de links não oficiais
 
 `CHIMPI_SUPPORT_CHECK=0` desliga a consulta opcional — os modos de smoke test também evitam rede e avisos durante a compilação
+
+
+## Atualização do catálogo em 15/11/2026
+
+A prévia pública `v1.1.0-preview.18` do ChimpiCode foi publicada em 15/11/2026 às 14:05:41 UTC e permanece classificada como prévia. O instalador Windows Setup tem o digest SHA-256 `sha256:e518703784c7f38143332c5a12e6ed96f6a0bf84ca0831ba40ca9f556bee020f`. A versão estável continua sendo `v1.0.0`.
