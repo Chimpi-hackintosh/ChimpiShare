@@ -1,6 +1,7 @@
 name: Chimpi-hackintosh — Compilar ChimpiShare
 
 on:
+  pull_request:
   push:
     branches: [main]
   workflow_dispatch:
@@ -89,6 +90,7 @@ jobs:
           retention-days: 30
 
   release:
+    if: github.event_name != 'pull_request'
     name: Preparar lançamento com todos os downloads
     needs: build
     runs-on: ubuntu-22.04
