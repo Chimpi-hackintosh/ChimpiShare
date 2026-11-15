@@ -83,21 +83,26 @@ class PrereleaseVersionTests(unittest.TestCase):
         self.assertIsNone(support.version("1.1.0-01"))
 
     def test_chimpicode_preview_floor_and_next_release(self):
-        self.assertEqual(support.POLICY["apps"]["ChimpiCode"]["minimum"], "1.1.0-preview.3")
-        self.assertIsNotNone(support.notice("ChimpiCode", "1.1.0-preview.2"))
-        self.assertIsNone(support.notice("ChimpiCode", "1.1.0-preview.3"))
+        self.assertEqual(support.POLICY["apps"]["ChimpiCode"]["minimum"], "1.1.0-preview.12")
+        self.assertIsNotNone(support.notice("ChimpiCode", "1.1.0-preview.11"))
+        self.assertIsNone(support.notice("ChimpiCode", "1.1.0-preview.12"))
         self.assertIsNone(support.notice("ChimpiCode", "1.1.0"))
+        previous = copy.deepcopy(support.POLICY)
+        previous["apps"]["ChimpiCode"].update(
+            minimum="1.1.0-preview.11",
+            tag="v1.1.0-preview.11",
+            url="https://github.com/Chimpi-hackintosh/ChimpiCode/releases/tag/v1.1.0-preview.11",
+        )
         release = {
-            "tag_name": "v1.1.0-preview.4",
-            "html_url": "https://github.com/Chimpi-hackintosh/ChimpiCode/releases/tag/v1.1.0-preview.4",
+            "tag_name": "v1.1.0-preview.12",
+            "html_url": "https://github.com/Chimpi-hackintosh/ChimpiCode/releases/tag/v1.1.0-preview.12",
             "assets": [{}],
             "draft": False,
             "prerelease": True,
         }
-        updated = support.with_releases(support.POLICY, "ChimpiCode", [release])
-        self.assertEqual(updated["apps"]["ChimpiCode"]["minimum"], "1.1.0-preview.4")
-        self.assertEqual(updated["apps"]["ChimpiCode"]["tag"], "v1.1.0-preview.4")
-
+        updated = support.with_releases(previous, "ChimpiCode", [release])
+        self.assertEqual(updated["apps"]["ChimpiCode"]["minimum"], "1.1.0-preview.12")
+        self.assertEqual(updated["apps"]["ChimpiCode"]["tag"], "v1.1.0-preview.12")
 
 if __name__ == "__main__":
     unittest.main()
